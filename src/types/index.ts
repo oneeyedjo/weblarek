@@ -18,6 +18,8 @@ export interface IProduct {
   price: number | null;
 }
 
+export type ValidationErrors = Partial<Record<keyof IBuyer, string>>;
+
 export type TPayment = "card" | "cash";
 
 export interface IBuyer {
@@ -33,7 +35,7 @@ export interface IProductResponse {
 }
 
 export interface IOrderData {
-  payment: "card" | "cash";
+  payment: TPayment;
   address: string;
   email: string;
   phone: string;
@@ -41,6 +43,6 @@ export interface IOrderData {
 }
 
 export interface IOrderResponse {
-  orderId: string;
+  Id: string;
   total: number;
 }

@@ -1,8 +1,9 @@
 import { Api } from "../components/base/Api";
 import { IProductResponse, IOrderData, IOrderResponse } from "../types/index";
+import { IApi } from "../types"
 
 export class AppApi {
-  private api: Api;
+  private api: IApi;
 
   constructor(api: Api) {
     this.api = api;

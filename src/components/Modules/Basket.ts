@@ -7,7 +7,7 @@ class Basket {
     return this.items
   }
 
-  addItems(product: IProduct): void {
+  addItem(product: IProduct): void {
     if(!this.hasItem(product.id)) {
       this.items.push(product)
     }
@@ -24,7 +24,7 @@ class Basket {
     this.items = []
   }
 
-  getPrice(): number {
+  getTotalPrice(): number {
     return this.items.reduce((sum, item) => {
       return sum + (item.price || 0)
     }, 0)

@@ -1,4 +1,5 @@
 import { TPayment, IBuyer } from "../../types";
+import { ValidationErrors } from "../../types"
 
 class Customer {
   private payment: TPayment | null = null;
@@ -38,7 +39,7 @@ class Customer {
   }
 
   valideData(): Record<string, string> {
-    const errors: Record<string, string> = {};
+    const errors: ValidationErrors = {};
 
     if (!this.payment) {
       errors.payment = "Выберите способ оплаты";

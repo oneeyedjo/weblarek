@@ -12,7 +12,7 @@ class Catalog {
     return this.items;
   }
 
-  getId(id: string): IProduct | null {
+  getById(id: string): IProduct | null {
     return this.items.find(item => item.id === id) || null
   }
   
