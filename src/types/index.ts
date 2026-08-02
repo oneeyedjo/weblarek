@@ -43,6 +43,6 @@ export interface IOrderData {
 }
 
 export interface IOrderResponse {
-  Id: string;
+  id: string;
   total: number;
 }

@@ -38,7 +38,7 @@ class Customer {
     this.email = "";
   }
 
-  valideData(): Record<string, string> {
+  valideData(): ValidationErrors {
     const errors: ValidationErrors = {};
 
     if (!this.payment) {
