@@ -16,8 +16,7 @@ export class Api {
 
     protected handleResponse<T>(response: Response): Promise<T> {
         if (response.ok) return response.json();
-        else return response.json()
-            .then(data => Promise.reject(data.error ?? response.statusText));
+        else return response.json().then(data => Promise.reject(data.error ?? response.statusText));
     }
 
     get<T extends object>(uri: string) {

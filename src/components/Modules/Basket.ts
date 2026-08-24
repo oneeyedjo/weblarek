@@ -1,42 +1,44 @@
-import { IProduct  } from "../../types";
+import { IProduct } from '../../types';
+import { IEvents } from '../base/Events';
 
-class Basket {
-  private items: IProduct[] = []
+export class Basket {
+    private items: IProduct[] = [];
 
-  getItems(): IProduct[] {
-    return this.items
-  }
+    constructor(private events: IEvents) {}
 
-  addItem(product: IProduct): void {
-    if(!this.hasItem(product.id)) {
-      this.items.push(product)
+    getItems(): IProduct[] {
+        return this.items;
     }
-  }
 
-  removeItem(id: string): void {
-    const index = this.items.findIndex(item => item.id === id) 
-    if (index !== -1) {
-      this.items.splice(index, 1)
+    addItem(product: IProduct): void {
+        if (!this.hasItem(product.id)) {
+            this.items.push(product);
+            this.events.emit('basket:changed');
+        }
     }
-  }
 
-  clear(): void {
-    this.items = []
-  }
+    removeItem(id: string): void {
+        const index = this.items.findIndex(item => item.id === id);
+        if (index !== -1) {
+            this.items.splice(index, 1);
+            this.events.emit('basket:changed');
+        }
+    }
 
-  getTotalPrice(): number {
-    return this.items.reduce((sum, item) => {
-      return sum + (item.price || 0)
-    }, 0)
-  }
+    clear(): void {
+        this.items = [];
+        this.events.emit('basket:changed');
+    }
 
-  getNum(): number {
-    return this.items.length
-  }
+    getTotalPrice(): number {
+        return this.items.reduce((sum, item) => sum + (item.price || 0), 0);
+    }
 
-  hasItem(id: string): boolean {
-    return this.items.some(item => item.id === id)
-  }
+    getNum(): number {
+        return this.items.length;
+    }
+
+    hasItem(id: string): boolean {
+        return this.items.some(item => item.id === id);
+    }
 }
-
-export default Basket;
