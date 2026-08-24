@@ -220,9 +220,9 @@ events.on('success:close', () => {
 async function init() {
     try {
         catalog.setItems(apiProducts.items);
-        console.log('✅ Данные загружены из мока:', apiProducts.items.length, 'товаров');
+        console.log(' Данные загружены:', apiProducts.items.length, 'товаров');
     } catch (error) {
-        console.error('❌ Ошибка загрузки моковых данных:', error);
+        console.error('Ошибка загрузки', error);
     }
 }
 
