@@ -1,4 +1,5 @@
-import { categoryMap, CDN_URL } from '../../utils/constants';
+
+import { categoryMap } from '../../utils/constants';
 import { BaseCard } from './BaseCard';
 import { ensureElement } from '../../utils/utils';
 import { ICardPreview } from '../../types';
@@ -27,7 +28,7 @@ export class ProductDetail extends BaseCard {
 
     set data(value: ICardPreview) {
         super.data = value;
-        this.setImage(this.imageElement, `${CDN_URL}/${value.image}`);
+        this.setImage(this.imageElement, value.image);
         this.categoryElement.textContent = value.category;
         this.categoryElement.className = `card__category ${categoryMap[value.category as CategoryKey]}`;
         this.descriptionElement.textContent = value.description;

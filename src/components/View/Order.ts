@@ -21,6 +21,7 @@ export class Order extends BaseForm {
 
         this.container.addEventListener('submit', (e) => {
             e.preventDefault();
+            console.log('🔥 order:submit сработал!');
             this.events.emit('order:submit');
         });
 

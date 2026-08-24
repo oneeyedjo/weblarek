@@ -28,6 +28,7 @@ export class Contact extends BaseForm {
 
         this.container.addEventListener('submit', (e) => {
             e.preventDefault();
+            console.log('🔥 contacts:submit сработал!');
             this.events.emit('contacts:submit');
         });
     }
