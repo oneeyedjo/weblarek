@@ -2,7 +2,8 @@ import { Component } from '../base/Component';
 import { ensureElement } from '../../utils/utils';
 import { ICardGeneral } from '../../types';
 
-export class BaseCard extends Component<ICardGeneral> {
+
+export class BaseCard<T extends ICardGeneral = ICardGeneral> extends Component<T> {
     protected titleElement: HTMLElement;
     protected priceElement: HTMLElement;
 
@@ -12,7 +13,7 @@ export class BaseCard extends Component<ICardGeneral> {
         this.priceElement = ensureElement<HTMLElement>('.card__price', container);
     }
 
-    set data(value: ICardGeneral) {
+    set data(value: T) {
         this.titleElement.textContent = value.title;
         this.priceElement.textContent = value.price !== null ? `${value.price} синапсов` : 'Бесценно';
     }

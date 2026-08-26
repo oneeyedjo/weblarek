@@ -35,10 +35,17 @@ export class Customer {
         this.events.emit('customer:changed');
     }
 
-    valideData(): ValidationErrors {
+
+    validateOrderData(): ValidationErrors {
         const errors: ValidationErrors = {};
         if (!this.payment) errors.payment = 'Выберите способ оплаты';
         if (!this.address.trim()) errors.address = 'Укажите адрес';
+        return errors;
+    }
+
+
+    validateContactData(): ValidationErrors {
+        const errors: ValidationErrors = {};
         if (!this.phone.trim()) errors.phone = 'Укажите телефон';
         if (!this.email.trim()) errors.email = 'Укажите email';
         return errors;

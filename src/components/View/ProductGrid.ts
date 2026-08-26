@@ -5,14 +5,11 @@ interface IProductGrid {
 }
 
 export class ProductGrid extends Component<IProductGrid> {
-    private containerElement: HTMLElement;
-
     constructor(container: HTMLElement) {
-        super(container);
-        this.containerElement = container;
+        super(container); 
     }
 
     set catalog(value: HTMLElement[]) {
-        this.containerElement.replaceChildren(...value);
+        this.container.replaceChildren(...value); 
     }
 }

@@ -18,17 +18,18 @@ export class Contact extends BaseForm {
 
         this.phoneInput.addEventListener('input', (e) => {
             const target = e.target as HTMLInputElement;
-            this.events.emit('contacts:phone', { phone: target.value.trim() });
+
+            this.events.emit('contacts:phone', { phone: target.value });
         });
 
         this.emailInput.addEventListener('input', (e) => {
             const target = e.target as HTMLInputElement;
-            this.events.emit('contacts:email', { email: target.value.trim() });
+
+            this.events.emit('contacts:email', { email: target.value });
         });
 
         this.container.addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log('🔥 contacts:submit сработал!');
             this.events.emit('contacts:submit');
         });
     }

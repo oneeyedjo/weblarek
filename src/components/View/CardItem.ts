@@ -1,7 +1,12 @@
 import { BaseCard } from './BaseCard';
 import { ensureElement } from '../../utils/utils';
+import { ICardGeneral } from '../../types';
 
-export class CardItem extends BaseCard {
+interface ICardItem extends ICardGeneral {
+    index: number;
+}
+
+export class CardItem extends BaseCard<ICardItem> {
     private indexElement: HTMLElement;
     private deleteButton: HTMLButtonElement;
 
@@ -14,5 +19,10 @@ export class CardItem extends BaseCard {
 
     set index(value: number) {
         this.indexElement.textContent = String(value);
+    }
+
+    set data(value: ICardItem) {
+        super.data = value;
+        this.index = value.index;
     }
 }

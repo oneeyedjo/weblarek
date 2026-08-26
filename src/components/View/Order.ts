@@ -21,7 +21,7 @@ export class Order extends BaseForm {
 
         this.container.addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log('🔥 order:submit сработал!');
+            console.log('✅ 1. Событие submit сработало в Order.ts');
             this.events.emit('order:submit');
         });
 
@@ -35,7 +35,7 @@ export class Order extends BaseForm {
 
         this.addressInput.addEventListener('input', (e) => {
             const target = e.target as HTMLInputElement;
-            this.events.emit('order:address', { address: target.value.trim() });
+            this.events.emit('order:address', { address: target.value });
         });
     }
 

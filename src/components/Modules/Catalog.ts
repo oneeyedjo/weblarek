@@ -22,7 +22,7 @@ export class Catalog {
 
     setSelected(product: IProduct): void {
         this.selected = product;
-        this.events.emit('card:selected', product);
+        this.events.emit('catalog:selectedChanged');
     }
 
     getSelected(): IProduct | null {

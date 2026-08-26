@@ -1,4 +1,3 @@
-
 import './scss/styles.scss';
 
 import { EventEmitter } from './components/base/Events';
@@ -22,18 +21,15 @@ import { Order } from './components/View/Order';
 import { Contact } from './components/View/Contact';
 import { Success } from './components/View/success';
 
-import { IProduct, ICardPreview, TPayment } from './types';
-
+import { TPayment } from './types';
 
 const events = new EventEmitter();
 const catalog = new Catalog(events);
 const basket = new Basket(events);
 const customer = new Customer(events);
 
-
 const baseApi = new Api(API_URL);
 const appApi = new AppApi(baseApi);
-
 
 const gallery = new ProductGrid(ensureElement('.gallery'));
 const modal = new Modal(ensureElement('#modal-container'));
@@ -43,6 +39,63 @@ const orderForm = new Order(cloneTemplate('#order'), events);
 const contactForm = new Contact(cloneTemplate('#contacts'), events);
 const successForm = new Success(cloneTemplate('#success'), events);
 const basketView = new BasketView(cloneTemplate('#basket'), events);
+const productDetail = new ProductDetail(cloneTemplate('#card-preview'), events);
+
+
+function updateBasketView() {
+    const items = basket.getItems();
+    const listItems = items.map((item, index) => {
+        const cartItem = new CardItem(
+            cloneTemplate('#card-basket'),
+            () => {
+                basket.removeItem(item.id);
+            }
+        );
+        cartItem.data = {
+            ...item,
+            index: index + 1
+        };
+        return cartItem.render();
+    });
+    basketView.data = {
+        list: listItems,
+        totalPrice: basket.getTotalPrice(),
+        canOrder: basket.getNum() > 0
+    };
+    header.counter = basket.getNum();
+}
+
+
+function updateOrderForm() {
+    const currentData = customer.getData();
+    const errors = customer.validateOrderData();
+
+    orderForm.data = {
+        address: currentData.address || '',
+        payment: currentData.payment
+    };
+
+    const orderErrors: string[] = [];
+    if (errors.payment) orderErrors.push(errors.payment);
+    if (errors.address) orderErrors.push(errors.address);
+    orderForm.errors = orderErrors;
+}
+
+function updateContactForm() {
+    const currentData = customer.getData();
+    const errors = customer.validateContactData();
+
+    contactForm.data = {
+        phone: currentData.phone || '',
+        email: currentData.email || ''
+    };
+
+    const contactErrors: string[] = [];
+    if (errors.phone) contactErrors.push(errors.phone);
+    if (errors.email) contactErrors.push(errors.email);
+    contactForm.errors = contactErrors;
+}
+
 
 
 events.on('catalog:changed', () => {
@@ -52,7 +105,6 @@ events.on('catalog:changed', () => {
             cloneTemplate('#card-catalog'),
             () => {
                 catalog.setSelected(product);
-                events.emit('card:selected', product);
             }
         );
         card.data = product;
@@ -62,23 +114,15 @@ events.on('catalog:changed', () => {
 });
 
 events.on('basket:changed', () => {
-    header.counter = basket.getNum();
+    updateBasketView();
 });
 
-events.on('card:selected', (product: IProduct) => {
-    const detail = new ProductDetail(cloneTemplate('#card-preview'), events);
+events.on('catalog:selectedChanged', () => {
+    const product = catalog.getSelected();
+    if (!product) return;
     const inBasket = basket.hasItem(product.id);
-    const previewData: ICardPreview = {
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        image: product.image,
-        category: product.category,
-        description: product.description,
-        inBasket: inBasket
-    };
-    detail.data = previewData;
-    modal.open(detail.render());
+    productDetail.data = { ...product, inBasket };
+    modal.open(productDetail.render());
 });
 
 events.on('preview:submit', () => {
@@ -93,146 +137,82 @@ events.on('preview:submit', () => {
 });
 
 events.on('basket:open', () => {
-    const items = basket.getItems();
-    const listItems = items.map((item, index) => {
-        const cartItem = new CardItem(
-            cloneTemplate('#card-basket'),
-            () => {
-                basket.removeItem(item.id);
-                events.emit('basket:open');
-            }
-        );
-        cartItem.data = item;
-        cartItem.index = index + 1;
-        return cartItem.render();
-    });
-    basketView.data = {
-        list: listItems,
-        totalPrice: basket.getTotalPrice(),
-        canOrder: basket.getNum() > 0
-    };
     modal.open(basketView.render());
 });
 
 events.on('basket:submit', () => {
-    const currentData = customer.getData();
-    orderForm.data = {
-        address: currentData.address || '',
-        payment: currentData.payment
-    };
-    orderForm.errors = [];
+    updateOrderForm();
     modal.open(orderForm.render());
 });
 
+
+events.on('customer:changed', () => {
+    updateOrderForm();
+    updateContactForm();
+});
+
+
 events.on('order:payment', (data: { payment: TPayment }) => {
     customer.setData({ payment: data.payment });
-    updateOrderForm();
 });
 
 events.on('order:address', (data: { address: string }) => {
     customer.setData({ address: data.address });
-    updateOrderForm();
 });
-
-function updateOrderForm() {
-    const currentData = customer.getData();
-    orderForm.data = {
-        address: currentData.address || '',
-        payment: currentData.payment
-    };
-    const hasPayment = !!currentData.payment;
-    const hasAddress = currentData.address.trim() !== '';
-    if (hasPayment && hasAddress) {
-        orderForm.errors = [];
-    } else {
-        const errors: string[] = [];
-        if (!hasPayment) errors.push('Выберите способ оплаты');
-        if (!hasAddress) errors.push('Укажите адрес');
-        orderForm.errors = errors;
-    }
-}
 
 events.on('order:submit', () => {
-    const currentData = customer.getData();
-    const hasPayment = !!currentData.payment;
-    const hasAddress = currentData.address.trim() !== '';
-
-    if (hasPayment && hasAddress) {
-        contactForm.data = {
-            phone: currentData.phone || '',
-            email: currentData.email || ''
-        };
-        contactForm.errors = [];
+    const errors = customer.validateOrderData();
+    if (Object.keys(errors).length === 0) {
+        updateContactForm();
         modal.open(contactForm.render());
     } else {
-        const errors: string[] = [];
-        if (!hasPayment) errors.push('Выберите способ оплаты');
-        if (!hasAddress) errors.push('Укажите адрес');
-        orderForm.errors = errors;
+        updateOrderForm();
+        const orderErrors: string[] = [];
+        if (errors.payment) orderErrors.push(errors.payment);
+        if (errors.address) orderErrors.push(errors.address);
+        orderForm.errors = orderErrors;
     }
 });
+
 
 events.on('contacts:phone', (data: { phone: string }) => {
     customer.setData({ phone: data.phone });
-    updateContactForm();
 });
 
 events.on('contacts:email', (data: { email: string }) => {
     customer.setData({ email: data.email });
-    updateContactForm();
 });
 
-function updateContactForm() {
-    const currentData = customer.getData();
-    contactForm.data = {
-        phone: currentData.phone || '',
-        email: currentData.email || ''
-    };
-    const hasPhone = currentData.phone.trim() !== '';
-    const hasEmail = currentData.email.trim() !== '';
-    if (hasPhone && hasEmail) {
-        contactForm.errors = [];
-    } else {
-        const errors: string[] = [];
-        if (!hasPhone) errors.push('Укажите телефон');
-        if (!hasEmail) errors.push('Укажите email');
-        contactForm.errors = errors;
-    }
-}
-
 events.on('contacts:submit', () => {
-    const currentData = customer.getData();
-    const hasPhone = currentData.phone.trim() !== '';
-    const hasEmail = currentData.email.trim() !== '';
+    const errors = customer.validateContactData();
+    if (Object.keys(errors).length === 0) {
+        const currentData = customer.getData();
+        const orderData = {
+            payment: currentData.payment!,
+            address: currentData.address,
+            email: currentData.email,
+            phone: currentData.phone,
+            items: basket.getItems().map(item => item.id),
+            total: basket.getTotalPrice()
+        };
 
-    if (!hasPhone || !hasEmail) {
-        const errors: string[] = [];
-        if (!hasPhone) errors.push('Укажите телефон');
-        if (!hasEmail) errors.push('Укажите email');
-        contactForm.errors = errors;
-        return;
+        appApi.postOrder(orderData)
+            .then(response => {
+                successForm.total = response.total;
+                modal.open(successForm.render());
+                basket.clear();
+                customer.clear();
+            })
+            .catch(error => {
+                console.error('Ошибка заказа:', error);
+            });
+    } else {
+        updateContactForm();
+        const contactErrors: string[] = [];
+        if (errors.phone) contactErrors.push(errors.phone);
+        if (errors.email) contactErrors.push(errors.email);
+        contactForm.errors = contactErrors;
     }
-
-    const orderData = {
-        payment: currentData.payment!,
-        address: currentData.address,
-        email: currentData.email,
-        phone: currentData.phone,
-        items: basket.getItems().map(item => item.id),
-        total: basket.getTotalPrice() 
-    };
-
-
-    appApi.postOrder(orderData)
-        .then(response => {
-            successForm.total = response.total;
-            modal.open(successForm.render());
-            basket.clear();
-            customer.clear();
-        })
-        .catch(error => {
-            console.error('Ошибка заказа:', error);
-        });
 });
 
 events.on('success:close', () => {
@@ -248,9 +228,8 @@ async function init() {
             image: product.image ? CDN_URL + product.image : ''
         }));
         catalog.setItems(productsWithImages);
-        console.log(' Загружено товаров:', productsWithImages.length);
     } catch (error) {
-        console.error(' Ошибка загрузки каталога:', error);
+        console.error('Ошибка загрузки каталога:', error);
     }
 }
 

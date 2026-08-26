@@ -34,12 +34,14 @@ export interface IProductResponse {
     total: number;
 }
 
+
 export interface IOrderData {
     payment: TPayment;
     address: string;
     email: string;
     phone: string;
     items: string[];
+    total: number; 
 }
 
 export interface IOrderResponse {

@@ -1,4 +1,3 @@
-
 import { categoryMap } from '../../utils/constants';
 import { BaseCard } from './BaseCard';
 import { ensureElement } from '../../utils/utils';
@@ -7,7 +6,7 @@ import { IEvents } from '../base/Events';
 
 type CategoryKey = keyof typeof categoryMap;
 
-export class ProductDetail extends BaseCard {
+export class ProductDetail extends BaseCard<ICardPreview> {
     private imageElement: HTMLImageElement;
     private categoryElement: HTMLElement;
     private descriptionElement: HTMLElement;

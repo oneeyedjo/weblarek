@@ -5,7 +5,7 @@ import { ICardCatalog } from '../../types';
 
 type CategoryKey = keyof typeof categoryMap;
 
-export class ProductCard extends BaseCard {
+export class ProductCard extends BaseCard<ICardCatalog> {
     private categoryElement: HTMLElement;
     private imageElement: HTMLImageElement;
 
