@@ -1,3 +1,4 @@
+
 import './scss/styles.scss';
 
 import { EventEmitter } from './components/base/Events';
@@ -48,7 +49,7 @@ function updateBasketView() {
         const cartItem = new CardItem(
             cloneTemplate('#card-basket'),
             () => {
-                basket.removeItem(item.id);
+                events.emit('basket:remove', { id: item.id });
             }
         );
         cartItem.data = {
@@ -98,13 +99,14 @@ function updateContactForm() {
 
 
 
+
 events.on('catalog:changed', () => {
     const products = catalog.getItems();
     const cards = products.map((product) => {
         const card = new ProductCard(
             cloneTemplate('#card-catalog'),
             () => {
-                catalog.setSelected(product);
+                events.emit('catalog:select', { id: product.id });
             }
         );
         card.data = product;
@@ -125,6 +127,28 @@ events.on('catalog:selectedChanged', () => {
     modal.open(productDetail.render());
 });
 
+events.on('customer:changed', () => {
+    updateOrderForm();
+    updateContactForm();
+});
+
+
+
+
+
+events.on('catalog:select', (data: { id: string }) => {
+    const product = catalog.getById(data.id);
+    if (product) {
+        catalog.setSelected(product);
+    }
+});
+
+
+events.on('basket:remove', (data: { id: string }) => {
+    basket.removeItem(data.id);
+});
+
+
 events.on('preview:submit', () => {
     const selected = catalog.getSelected();
     if (!selected) return;
@@ -136,19 +160,14 @@ events.on('preview:submit', () => {
     modal.close();
 });
 
+
 events.on('basket:open', () => {
     modal.open(basketView.render());
 });
 
+
 events.on('basket:submit', () => {
-    updateOrderForm();
     modal.open(orderForm.render());
-});
-
-
-events.on('customer:changed', () => {
-    updateOrderForm();
-    updateContactForm();
 });
 
 
@@ -160,59 +179,42 @@ events.on('order:address', (data: { address: string }) => {
     customer.setData({ address: data.address });
 });
 
-events.on('order:submit', () => {
-    const errors = customer.validateOrderData();
-    if (Object.keys(errors).length === 0) {
-        updateContactForm();
-        modal.open(contactForm.render());
-    } else {
-        updateOrderForm();
-        const orderErrors: string[] = [];
-        if (errors.payment) orderErrors.push(errors.payment);
-        if (errors.address) orderErrors.push(errors.address);
-        orderForm.errors = orderErrors;
-    }
-});
 
+events.on('order:submit', () => {
+    modal.open(contactForm.render());
+});
 
 events.on('contacts:phone', (data: { phone: string }) => {
     customer.setData({ phone: data.phone });
 });
 
+
 events.on('contacts:email', (data: { email: string }) => {
     customer.setData({ email: data.email });
 });
 
-events.on('contacts:submit', () => {
-    const errors = customer.validateContactData();
-    if (Object.keys(errors).length === 0) {
-        const currentData = customer.getData();
-        const orderData = {
-            payment: currentData.payment!,
-            address: currentData.address,
-            email: currentData.email,
-            phone: currentData.phone,
-            items: basket.getItems().map(item => item.id),
-            total: basket.getTotalPrice()
-        };
 
-        appApi.postOrder(orderData)
-            .then(response => {
-                successForm.total = response.total;
-                modal.open(successForm.render());
-                basket.clear();
-                customer.clear();
-            })
-            .catch(error => {
-                console.error('Ошибка заказа:', error);
-            });
-    } else {
-        updateContactForm();
-        const contactErrors: string[] = [];
-        if (errors.phone) contactErrors.push(errors.phone);
-        if (errors.email) contactErrors.push(errors.email);
-        contactForm.errors = contactErrors;
-    }
+events.on('contacts:submit', () => {
+    const currentData = customer.getData();
+    const orderData = {
+        payment: currentData.payment!,
+        address: currentData.address,
+        email: currentData.email,
+        phone: currentData.phone,
+        items: basket.getItems().map(item => item.id),
+        total: basket.getTotalPrice()
+    };
+
+    appApi.postOrder(orderData)
+        .then(response => {
+            successForm.total = response.total;
+            modal.open(successForm.render());
+            basket.clear();
+            customer.clear();
+        })
+        .catch(error => {
+            console.error('Ошибка заказа:', error);
+        });
 });
 
 events.on('success:close', () => {
@@ -220,8 +222,14 @@ events.on('success:close', () => {
 });
 
 
+
+
 async function init() {
     try {
+
+        basket.clear();
+        customer.clear();
+
         const response = await appApi.getProducts();
         const productsWithImages = response.items.map(product => ({
             ...product,
